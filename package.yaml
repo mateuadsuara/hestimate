@@ -19,11 +19,15 @@ description: Please see the README
 
 dependencies:
   - base >= 4.7 && < 5
-  - hspec
-  - QuickCheck
+  - aeson
+  - servant-server
+  - wai
+  - warp
 
 library:
   source-dirs: src
+  dependencies:
+    - aeson
 
 executables:
   hestimate-exe:
@@ -45,4 +49,9 @@ tests:
       - -with-rtsopts=-N
     dependencies:
       - hestimate
+      - hspec
+      - QuickCheck
+      - hspec-wai
+      - hspec-wai-json
+      - aeson
 
