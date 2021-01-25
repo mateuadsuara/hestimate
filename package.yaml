@@ -54,4 +54,7 @@ tests:
       - hspec-wai
       - hspec-wai-json
       - aeson
+      - http-types
+      - bytestring
+      - utf8-string
 
