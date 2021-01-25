@@ -4,6 +4,7 @@
 module Lib
     ( startApp
     , app
+    , Estimation (..)
     ) where
 
 import Data.Aeson
@@ -12,22 +13,14 @@ import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
 
-data User = User
-  { userId        :: Int
-  , userFirstName :: String
-  , userLastName  :: String
-  } deriving (Eq, Show)
-
 data Estimation = Estimation
   { id :: Int
   } deriving (Eq, Show)
 
-$(deriveJSON defaultOptions ''User)
 $(deriveJSON defaultOptions ''Estimation)
 
 type API
-  =    "users"       :> Get '[JSON] [User]
-  :<|> "estimations" :> Get '[JSON] [Estimation]
+  =    "estimations" :> Get '[JSON] [Estimation]
   :<|> "estimations" :> ReqBody '[JSON] Estimation :> Post '[JSON] Estimation
 
 startApp :: IO ()
@@ -43,12 +36,7 @@ api = Proxy
 
 server :: Server API
 server =
-  return users :<|> return estimations :<|> estimation
-
-users :: [User]
-users = [ User 1 "Isaac" "Newton"
-        , User 2 "Albert" "Einstein"
-        ]
+  return estimations :<|> estimation
 
 estimations :: [Estimation]
 estimations = [ Estimation 1
