@@ -1,3 +1,6 @@
 .stack-work
 *.swp
 hestimate.cabal
+
+*.iml
+.idea/
