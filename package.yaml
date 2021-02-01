@@ -23,6 +23,9 @@ dependencies:
   - servant-server
   - wai
   - warp
+  - postgresql-simple
+  - resource-pool
+  - bytestring
 
 library:
   source-dirs: src
@@ -59,4 +62,3 @@ tests:
       - utf8-string
       - wai-extra
       - QuickCheck
-

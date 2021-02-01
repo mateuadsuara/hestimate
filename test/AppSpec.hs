@@ -16,18 +16,18 @@ toS = C.decode . unpack
 bodyBeing :: ByteString -> ResponseMatcher
 bodyBeing expected = let status = 200
                          match _ body | body == expected = Nothing
-                                      | otherwise = Just $ "Got: " ++ (toS body) ++ ", but expected: " ++ (toS expected)
+                                      | otherwise = Just $ "Got: " ++ toS body ++ ", but expected: " ++ (toS expected)
                      in status {matchBody = MatchBody match}
 
 shouldHaveBody :: WaiSession st SResponse -> ByteString -> WaiExpectation st
 shouldHaveBody r e = r `shouldRespondWith` bodyBeing e
 
 spec :: Spec
-spec = with (return app) $ do
+spec = with (return app) $
     describe "GET /estimations" $ do
-        it "responds with 200" $ do
+        it "responds with 200" $
             get "/estimations" `shouldRespondWith` 200
-        it "responds with [Estimation]" $ do
+        it "responds with [Estimation]" $
             get "/estimations" `shouldHaveBody` encode [ Estimation 1
                                                        , Estimation 2
                                                        ]
