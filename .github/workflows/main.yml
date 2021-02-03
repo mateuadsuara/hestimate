@@ -4,11 +4,24 @@ jobs:
   build-and-test:
     name: hestimate build & test
     runs-on: ubuntu-latest
+    env:
+      GHC_VERSION: '8.8.3'
+      STACK_VERSION: 'latest'
+
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cabal/store
+            dist-newstyle
+          key: ${{ runner.os }}-$GHC_VERSION-${{ hashFiles('cabal.project.freeze') }}
+          restore-keys: |
+            ${{ runner.os }}-$GHC_VERSION-
       - uses: haskell/actions/setup@v1
         with:
-          ghc-version: '8.8.3'
+          ghc-version: $GHC_VERSION
           enable-stack: true
-          stack-version: 'latest'
+          stack-version: $STACK_VERSION
+
       - run: stack test
