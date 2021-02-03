@@ -10,14 +10,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+
+      - name: Cache dependencies (Unix)
+        uses: actions/cache@v2
         with:
-          path: |
-            ~/.cabal/store
-            dist-newstyle
-          key: ${{ runner.os }}-${{ env.GHC_VERSION }}-${{ hashFiles('cabal.project.freeze') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ env.GHC_VERSION }}-
+          path: ~/.stack
+          key: ${{ runner.os }}-store-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('hestimate.cabal') }}
+
       - uses: haskell/actions/setup@v1
         with:
           ghc-version: ${{ env.GHC_VERSION }}
