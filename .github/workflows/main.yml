@@ -20,7 +20,7 @@ jobs:
             ${{ runner.os }}-${{ env.GHC_VERSION }}-
       - uses: haskell/actions/setup@v1
         with:
-          ghc-version: $${{ env.GHC_VERSION }}
+          ghc-version: ${{ env.GHC_VERSION }}
           enable-stack: true
           stack-version: ${{ env.STACK_VERSION }}
 
