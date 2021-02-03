@@ -17,10 +17,12 @@ jobs:
           path: ~/.stack
           key: ${{ runner.os }}-store-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('hestimate.cabal') }}
 
-      - uses: haskell/actions/setup@v1
+      - name: Setup haskell compiler
+        uses: haskell/actions/setup@v1
         with:
           ghc-version: ${{ env.GHC_VERSION }}
           enable-stack: true
           stack-version: ${{ env.STACK_VERSION }}
 
-      - run: stack test
+      - name: Build
+        run: stack build
