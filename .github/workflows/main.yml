@@ -15,9 +15,9 @@ jobs:
           path: |
             ~/.cabal/store
             dist-newstyle
-          key: ${{ runner.os }}-$GHC_VERSION-${{ hashFiles('cabal.project.freeze') }}
+          key: ${{ runner.os }}-$${{ env.GHC_VERSION }}-${{ hashFiles('cabal.project.freeze') }}
           restore-keys: |
-            ${{ runner.os }}-$GHC_VERSION-
+            ${{ runner.os }}-${{ env.GHC_VERSION }}-
       - uses: haskell/actions/setup@v1
         with:
           ghc-version: $GHC_VERSION
