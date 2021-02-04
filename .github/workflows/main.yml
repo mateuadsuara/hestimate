@@ -22,7 +22,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.stack
-          key: ${{ runner.os }}-store-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('package.yaml') }}
+          key: ${{ runner.os }}-cache-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('package.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-store-
 
       - name: Build
         run: stack build --test --no-run-tests --bench --no-run-benchmarks
