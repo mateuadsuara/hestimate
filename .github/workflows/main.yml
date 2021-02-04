@@ -11,12 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Cache dependencies (Unix)
-        uses: actions/cache@v2
-        with:
-          path: ~/.stack
-          key: ${{ runner.os }}-store-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('package.yaml') }}
-
       - name: Setup haskell compiler
         uses: haskell/actions/setup@v1
         with:
@@ -24,5 +18,14 @@ jobs:
           enable-stack: true
           stack-version: ${{ env.STACK_VERSION }}
 
+      - name: Cache dependencies (Unix)
+        uses: actions/cache@v2
+        with:
+          path: ~/.stack
+          key: ${{ runner.os }}-store-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('package.yaml') }}
+
       - name: Build
         run: stack build --test --no-run-tests --bench --no-run-benchmarks
+
+      - name: Test
+        run: stack test
