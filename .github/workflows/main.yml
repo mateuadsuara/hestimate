@@ -10,18 +10,24 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cabal/store
-            dist-newstyle
-          key: ${{ runner.os }}-$GHC_VERSION-${{ hashFiles('cabal.project.freeze') }}
-          restore-keys: |
-            ${{ runner.os }}-$GHC_VERSION-
-      - uses: haskell/actions/setup@v1
-        with:
-          ghc-version: $GHC_VERSION
-          enable-stack: true
-          stack-version: $STACK_VERSION
 
-      - run: stack test
+      - name: Setup haskell compiler
+        uses: haskell/actions/setup@v1
+        with:
+          ghc-version: ${{ env.GHC_VERSION }}
+          enable-stack: true
+          stack-version: ${{ env.STACK_VERSION }}
+
+      - name: Cache dependencies (Unix)
+        uses: actions/cache@v2
+        with:
+          path: ~/.stack
+          key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('package.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-stack-
+
+      - name: Build
+        run: stack build --test --no-run-tests --bench --no-run-benchmarks
+
+      - name: Test
+        run: stack test
