@@ -15,7 +15,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.stack
-          key: ${{ runner.os }}-store-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('hestimate.cabal') }}
+          key: ${{ runner.os }}-store-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('package.yaml') }}
 
       - name: Setup haskell compiler
         uses: haskell/actions/setup@v1
@@ -25,7 +25,4 @@ jobs:
           stack-version: ${{ env.STACK_VERSION }}
 
       - name: Build
-        run: stack build
-
-      - name: Test
-        run: stack test
+        run: stack build --test --no-run-tests --bench --no-run-benchmarks

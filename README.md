@@ -1,3 +1,3 @@
-# Objective
+# Project
 
-Estimate tasks web project in Haskell
+Web app to estimate tasks in Haskell
