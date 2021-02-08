@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module AppSpec(spec) where
 
-import Lib (app, Estimation(..))
+import Lib (app)
 
 import Data.Aeson
 import Data.ByteString.Lazy
@@ -9,6 +9,8 @@ import qualified Codec.Binary.UTF8.String as C
 import Network.Wai.Test
 import Test.Hspec
 import Test.Hspec.Wai
+
+import Model.Estimation ( Estimation(Estimation) )
 
 toS :: ByteString -> String
 toS = C.decode . unpack

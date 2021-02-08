@@ -2,6 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeOperators   #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes       #-}
 
 module Lib
     ( startApp
@@ -46,13 +47,15 @@ startApp = do
   run 8080 app
 
 app :: Application
-app = serve api server
+app = serve api (server liftIO)
 
 api :: Proxy API
 api = Proxy
 
-server :: Server API
-server = liftIO retrieveEstimations :<|> liftIO . insertEstimation
+type RepoToHandler m = forall a . m a -> Handler a
+
+server :: EstimationRepository m => RepoToHandler m -> Server API
+server repoToHandler = repoToHandler retrieveEstimations :<|> repoToHandler . insertEstimation
 
 initConnectionPool :: DBConnectionString -> IO (Pool Connection)
 initConnectionPool connStr =
