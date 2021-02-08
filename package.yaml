@@ -26,6 +26,7 @@ dependencies:
   - postgresql-simple
   - resource-pool
   - bytestring
+  - mtl
 
 library:
   source-dirs: src

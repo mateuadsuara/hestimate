@@ -6,12 +6,12 @@
 module Lib
     ( startApp
     , app
-    , Estimation (..)
     ) where
 
 import Data.ByteString (ByteString)
 import Data.Pool
 import Database.PostgreSQL.Simple
+    ( close, connectPostgreSQL, execute_, Connection )
 import Control.Exception (bracket)
 
 import Data.Aeson
@@ -21,9 +21,9 @@ import Network.Wai.Handler.Warp
 import Servant
 import Control.Monad.IO.Class
 
-data Estimation = Estimation
-  { id :: Int
-  } deriving (Eq, Show)
+import Model.Estimation
+
+import Repositories.EstimationRepository
 
 $(deriveJSON defaultOptions ''Estimation)
 
@@ -52,7 +52,7 @@ api :: Proxy API
 api = Proxy
 
 server :: Server API
-server = liftIO estimations :<|> estimation
+server = liftIO retrieveEstimations :<|> liftIO . insertEstimation
 
 initConnectionPool :: DBConnectionString -> IO (Pool Connection)
 initConnectionPool connStr =
@@ -67,23 +67,3 @@ initDB connstr = bracket getConnection close $ \conn -> do
   execute_ conn
     "CREATE TABLE IF NOT EXISTS hestimates (id numeric primary key)"
   return ()
-
-estimations :: IO [Estimation]
-estimations = do
-  conn <- getConnection
-  result <- query_ conn "select id from hestimates"
-  let estimates = map (Estimation . fromOnly) result
-  close conn
-  return estimates
-
-insertEstimation :: IO Estimation
-insertEstimation = do
-  conn <- getConnection
-  result <- query_ conn "insert into hestimates(id) values (5) returning id"
-  let [estimate] = map (Estimation . fromOnly) result
-  close conn
-  return estimate
-
-estimation :: Estimation -> Handler Estimation
-estimation (Estimation id) = liftIO insertEstimation
-
