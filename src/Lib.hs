@@ -50,7 +50,7 @@ startApp = do
   run 8080 (app postgresToHandler)
 
 app :: EstimationRepository m => RepoToHandler m -> Application
-app repoToHandler = serve api (server repoToHandler)
+app repoToHandler = serve api (hoistServer api repoToHandler server)  
 
 api :: Proxy API
 api = Proxy
@@ -63,8 +63,8 @@ inMemoryToHandler m = return (evalState m [ Estimation 1, Estimation 2])
 
 type RepoToHandler m = forall a . m a -> Handler a
 
-server :: EstimationRepository m => RepoToHandler m -> ServerT API Handler
-server repoToHandler = repoToHandler retrieveEstimations :<|> repoToHandler . insertEstimation
+server :: EstimationRepository m => ServerT API m
+server = retrieveEstimations :<|> insertEstimation
 
 initConnectionPool :: DBConnectionString -> IO (Pool Connection)
 initConnectionPool connStr =
