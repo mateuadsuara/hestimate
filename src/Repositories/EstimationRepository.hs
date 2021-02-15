@@ -1,10 +1,12 @@
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances #-}
 
-module Repositories.EstimationRepository(EstimationRepository(..)) where 
+module Repositories.EstimationRepository(EstimationRepository(..), PostgresEstimation, InMemoryEstimation) where 
 
-import Model.Estimation
-import Control.Monad.Reader
+import Model.Estimation ( Estimation(Estimation) )
+
+import Control.Monad.State ( MonadState(get), modify, State )
+import Control.Monad.Reader ()
 import Database.PostgreSQL.Simple (query, query_, fromOnly, Connection, connectPostgreSQL, close)
 
 class Monad m => EstimationRepository m where
@@ -17,6 +19,8 @@ getConnection :: IO Connection
 getConnection = connectPostgreSQL connStr
   
 type PostgresEstimation = IO
+
+--TODO: Generar el ID con un UUID
 
 instance EstimationRepository PostgresEstimation where
   retrieveEstimations = do
@@ -32,3 +36,9 @@ instance EstimationRepository PostgresEstimation where
     let [estimate] = map (Estimation . fromOnly) result
     close conn
     return estimate
+
+type InMemoryEstimation = State [Estimation]
+
+instance EstimationRepository InMemoryEstimation where
+  retrieveEstimations = get  
+  insertEstimation e = modify (e:) >> return e

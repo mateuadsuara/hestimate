@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module AppSpec(spec) where
 
-import Lib (app)
+import Lib (app, inMemoryToHandler)
 
 import Data.Aeson
 import Data.ByteString.Lazy
@@ -25,7 +25,7 @@ shouldHaveBody :: WaiSession st SResponse -> ByteString -> WaiExpectation st
 shouldHaveBody r e = r `shouldRespondWith` bodyBeing e
 
 spec :: Spec
-spec = with (return app) $
+spec = with (return (app inMemoryToHandler)) $
     describe "GET /estimations" $ do
         it "responds with 200" $
             get "/estimations" `shouldRespondWith` 200

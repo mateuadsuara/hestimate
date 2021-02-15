@@ -7,6 +7,7 @@
 module Lib
     ( startApp
     , app
+    , inMemoryToHandler
     ) where
 
 import Data.ByteString (ByteString)
@@ -25,6 +26,8 @@ import Control.Monad.IO.Class
 import Model.Estimation
 
 import Repositories.EstimationRepository
+    ( EstimationRepository(..), PostgresEstimation, InMemoryEstimation)
+import Control.Monad.State (evalState)
 
 $(deriveJSON defaultOptions ''Estimation)
 
@@ -44,17 +47,23 @@ startApp = do
   pool <- initConnectionPool connStr  
   initDB connStr
   putStrLn "Listening on port 8080..."
-  run 8080 app
+  run 8080 (app postgresToHandler)
 
-app :: Application
-app = serve api (server liftIO)
+app :: EstimationRepository m => RepoToHandler m -> Application
+app repoToHandler = serve api (server repoToHandler)
 
 api :: Proxy API
 api = Proxy
 
+postgresToHandler :: PostgresEstimation a -> Handler a
+postgresToHandler = liftIO 
+
+inMemoryToHandler :: InMemoryEstimation a -> Handler a
+inMemoryToHandler m = return (evalState m [ Estimation 1, Estimation 2]) 
+
 type RepoToHandler m = forall a . m a -> Handler a
 
-server :: EstimationRepository m => RepoToHandler m -> Server API
+server :: EstimationRepository m => RepoToHandler m -> ServerT API Handler
 server repoToHandler = repoToHandler retrieveEstimations :<|> repoToHandler . insertEstimation
 
 initConnectionPool :: DBConnectionString -> IO (Pool Connection)
