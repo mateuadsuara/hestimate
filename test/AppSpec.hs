@@ -23,7 +23,7 @@ import Network.HTTP.Types(methodPost,hContentType )
 import Model.Estimation ( Estimation(Estimation) )
 
 import Control.Monad.Reader ( liftIO )
-import Control.Concurrent.MVar ( MVar, newMVar )
+import Control.Concurrent.MVar ( newMVar )
 
 toS :: ByteString -> String
 toS = C.decode . unpack
