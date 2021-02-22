@@ -1,23 +1,25 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Repositories.EstimationRepository(EstimationRepository(..), PostgresEstimation, InMemoryEstimation) where 
+module Repositories.EstimationRepository(EstimationRepository(..), PostgresEstimation, InMemoryEstimation) where
 
 import Model.Estimation ( Estimation(Estimation) )
 
 import Control.Monad.State ( MonadState(get), modify, State )
-import Control.Monad.Reader ()
+import Control.Monad.Reader ( ReaderT, ask, liftIO )
 import Database.PostgreSQL.Simple (query, query_, fromOnly, Connection, connectPostgreSQL, close)
+
+import Control.Concurrent.MVar ( MVar, readMVar, takeMVar, putMVar )
 
 class Monad m => EstimationRepository m where
   retrieveEstimations :: m [Estimation]
   insertEstimation :: Estimation -> m Estimation
-  
+
 connStr = "dbname='hestimate' host='localhost' user='root' password='ee3a7fb68de968d24'"
 
 getConnection :: IO Connection
 getConnection = connectPostgreSQL connStr
-  
+
 type PostgresEstimation = IO
 
 --TODO: Generar el ID con un UUID
@@ -37,8 +39,17 @@ instance EstimationRepository PostgresEstimation where
     close conn
     return estimate
 
-type InMemoryEstimation = State [Estimation]
+type InMemoryEstimation = ReaderT (MVar [Estimation]) IO
 
 instance EstimationRepository InMemoryEstimation where
-  retrieveEstimations = get  
-  insertEstimation e = modify (e:) >> return e
+  retrieveEstimations = do
+    mvar <- ask
+    liftIO $ readMVar mvar
+
+  insertEstimation e = do
+    mvar <- ask
+    liftIO $ do
+      estimations <- takeMVar mvar
+      let estimations' = e:estimations
+      putMVar mvar estimations'
+    return e

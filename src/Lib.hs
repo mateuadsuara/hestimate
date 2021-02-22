@@ -21,13 +21,15 @@ import Data.Aeson.TH
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
-import Control.Monad.IO.Class
+import Control.Monad.IO.Class ( MonadIO(liftIO) )
 
 import Model.Estimation
 
 import Repositories.EstimationRepository
     ( EstimationRepository(..), PostgresEstimation, InMemoryEstimation)
-import Control.Monad.State (evalState)
+import Control.Monad.Reader (runReaderT)
+
+import Control.Concurrent.MVar ( MVar, readMVar, takeMVar, putMVar )
 
 $(deriveJSON defaultOptions ''Estimation)
 
@@ -58,8 +60,8 @@ api = Proxy
 postgresToHandler :: PostgresEstimation a -> Handler a
 postgresToHandler = liftIO 
 
-inMemoryToHandler :: InMemoryEstimation a -> Handler a
-inMemoryToHandler m = return (evalState m [ Estimation 1, Estimation 2]) 
+inMemoryToHandler :: MVar [Estimation] -> InMemoryEstimation a -> Handler a
+inMemoryToHandler mvar m = liftIO $ runReaderT m mvar
 
 type RepoToHandler m = forall a . m a -> Handler a
 
