@@ -46,19 +46,19 @@ getConnection = connectPostgreSQL connStr
 
 startApp :: IO ()
 startApp = do
-  pool <- initConnectionPool connStr  
+  pool <- initConnectionPool connStr
   initDB connStr
   putStrLn "Listening on port 8080..."
-  run 8080 (app postgresToHandler)
+  run 8080 (app $ postgresToHandler pool)
 
 app :: EstimationRepository m => RepoToHandler m -> Application
-app repoToHandler = serve api (hoistServer api repoToHandler server)  
+app repoToHandler = serve api (hoistServer api repoToHandler server)
 
 api :: Proxy API
 api = Proxy
 
-postgresToHandler :: PostgresEstimation a -> Handler a
-postgresToHandler = liftIO 
+postgresToHandler :: Pool Connection -> PostgresEstimation a -> Handler a
+postgresToHandler conn m = liftIO $ runReaderT m conn
 
 inMemoryToHandler :: MVar [Estimation] -> InMemoryEstimation a -> Handler a
 inMemoryToHandler mvar m = liftIO $ runReaderT m mvar

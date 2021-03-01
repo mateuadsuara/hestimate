@@ -5,6 +5,7 @@ module Repositories.EstimationRepository(EstimationRepository(..), PostgresEstim
 
 import Model.Estimation ( Estimation(Estimation) )
 
+import Data.Pool
 import Control.Monad.State ( MonadState(get), modify, State )
 import Control.Monad.Reader ( ReaderT, ask, liftIO )
 import Database.PostgreSQL.Simple (query, query_, fromOnly, Connection, connectPostgreSQL, close)
@@ -20,24 +21,24 @@ connStr = "dbname='hestimate' host='localhost' user='root' password='ee3a7fb68de
 getConnection :: IO Connection
 getConnection = connectPostgreSQL connStr
 
-type PostgresEstimation = IO
+type PostgresEstimation = ReaderT (Pool Connection) IO
 
 --TODO: Generar el ID con un UUID
 
 instance EstimationRepository PostgresEstimation where
   retrieveEstimations = do
-    conn <- getConnection
-    result <- query_ conn "select id from hestimates"
-    let estimates = map (Estimation . fromOnly) result
-    close conn
-    return estimates
+    pool <- ask
+    liftIO $ withResource pool $ \conn -> do
+      result <- query_ conn "select id from hestimates"
+      let estimates = map (Estimation . fromOnly) result
+      return estimates
 
   insertEstimation (Estimation id) = do
-    conn <- getConnection
-    result <- query conn "insert into hestimates(id) values (?) returning id" [id]
-    let [estimate] = map (Estimation . fromOnly) result
-    close conn
-    return estimate
+    pool <- ask
+    liftIO $ withResource pool $ \conn -> do
+      result <- query conn "insert into hestimates(id) values (?) returning id" [id]
+      let [estimate] = map (Estimation . fromOnly) result
+      return estimate
 
 type InMemoryEstimation = ReaderT (MVar [Estimation]) IO
 
