@@ -21,6 +21,7 @@ import Data.Aeson.TH
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
+import Network.Wai.Middleware.Cors (simpleCors)
 import Control.Monad.IO.Class ( MonadIO(liftIO) )
 
 import Model.Estimation
