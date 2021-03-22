@@ -21,7 +21,7 @@ import Data.Aeson.TH
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
-import Network.Wai.Middleware.Cors (simpleCors)
+import Network.Wai.Middleware.Cors (simpleCors, corsMethods, cors, simpleCorsResourcePolicy, CorsResourcePolicy(..))
 import Control.Monad.IO.Class ( MonadIO(liftIO) )
 
 import Model.Estimation
@@ -52,8 +52,14 @@ startApp = do
   putStrLn "Listening on port 8080..."
   run 8080 (app $ postgresToHandler pool)
 
+corsConfig :: Middleware
+corsConfig = cors (const $ Just simpleCorsResourcePolicy { 
+  corsMethods = ["GET", "HEAD", "POST", "OPTIONS"] 
+  , corsRequestHeaders = ["content-type"]
+})
+
 app :: EstimationRepository m => RepoToHandler m -> Application
-app repoToHandler = serve api (hoistServer api repoToHandler server)
+app repoToHandler = corsConfig $ serve api (hoistServer api repoToHandler server)
 
 api :: Proxy API
 api = Proxy
